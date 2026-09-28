@@ -1,0 +1,24 @@
+# meet-sortformer-svc — Phase B.3 spike add-ons on top of the
+# meet-parakeet-svc base.
+#
+# The base image (meet-parakeet-svc:local) already provides every dep
+# the SortformerEncLabelModel touches:
+#   - fastapi, uvicorn, pydantic, python-multipart
+#   - numpy, soundfile, librosa, scipy
+#   - torch 2.4.1 + torchaudio (CUDA 12.4)
+#   - nemo_toolkit[asr] 2.4.1 — ships SortformerEncLabelModel +
+#     SortformerModules for the v1 / 4-speaker variant
+#   - huggingface_hub (for from_pretrained download)
+#
+# The /diarize-file-upload endpoint (v2.2.0) calls meet-speaker-svc for
+# wespeaker embeddings, so we now declare httpx as a runtime dep. It is
+# already present in the base image (0.28.1) — declaring it here is
+# belt-and-suspenders so a future base-image change can't silently drop
+# the HTTP client out from under the hybrid diarization path.
+httpx>=0.27
+#
+# Likely future additions:
+#   - a newer nemo_toolkit (>= 2.5) when we move to the streaming v2.x
+#     models (current 2.4.1 raises a TypeError because the v2 config
+#     YAML references `spkcache_update_period` which the 2.4.1
+#     SortformerModules.__init__ does not accept).

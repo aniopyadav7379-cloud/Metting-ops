@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>NPU Status Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #1a1a1a; color: white; }
+        .status { padding: 20px; border-radius: 8px; margin: 10px 0; }
+        .success { background: #2d4a2d; border: 1px solid #4caf50; }
+        .error { background: #4a2d2d; border: 1px solid #f44336; }
+        pre { background: #2a2a2a; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>NPU Status Test</h1>
+    <div id="status">Checking backend status...</div>
+    <div id="sessions">Checking sessions...</div>
+    <div id="system-info">Checking system info...</div>
+    
+    <script>
+        // Test API endpoints
+        async function testAPIs() {
+            const statusDiv = document.getElementById('status');
+            const sessionsDiv = document.getElementById('sessions');
+            const systemInfoDiv = document.getElementById('system-info');
+            
+            try {
+                // Test /api/status
+                const statusRes = await fetch('http://localhost:1950/api/status');
+                const statusData = await statusRes.json();
+                statusDiv.innerHTML = `
+                    <div class="status ${statusData.npu_available ? 'success' : 'error'}">
+                        <h3>/api/status</h3>
+                        <pre>${JSON.stringify(statusData, null, 2)}</pre>
+                    </div>
+                `;
+                
+                // Test /api/recording-sessions
+                const sessionsRes = await fetch('http://localhost:1950/api/recording-sessions?limit=5');
+                const sessionsData = await sessionsRes.json();
+                sessionsDiv.innerHTML = `
+                    <div class="status success">
+                        <h3>/api/recording-sessions</h3>
+                        <p>Found ${sessionsData.sessions?.length || 0} sessions</p>
+                        <pre>${JSON.stringify(sessionsData, null, 2)}</pre>
+                    </div>
+                `;
+                
+                // Test /api/system-info (requires auth)
+                const token = localStorage.getItem('access_token');
+                if (token) {
+                    const systemRes = await fetch('http://localhost:1950/api/system-info', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const systemData = await systemRes.json();
+                    systemInfoDiv.innerHTML = `
+                        <div class="status ${systemData.npu?.available ? 'success' : 'error'}">
+                            <h3>/api/system-info (NPU Details)</h3>
+                            <pre>${JSON.stringify(systemData.npu, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    systemInfoDiv.innerHTML = '<div class="status error">No auth token - login required for system-info</div>';
+                }
+                
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status error">Error: ${error.message}</div>`;
+            }
+        }
+        
+        // Run test on load
+        testAPIs();
+        
+        // Refresh every 5 seconds
+        setInterval(testAPIs, 5000);
+    </script>
+</body>
+</html>

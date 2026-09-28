@@ -1,0 +1,120 @@
+# Traefik Dynamic Configuration for Meeting-Ops + Authentik
+
+http:
+  middlewares:
+    # Default headers
+    default-headers:
+      headers:
+        frameDeny: true
+        sslRedirect: true
+        browserXssFilter: true
+        contentTypeNosniff: true
+        forceSTSHeader: true
+        stsIncludeSubdomains: true
+        stsPreload: true
+        stsSeconds: 31536000
+        customFrameOptionsValue: SAMEORIGIN
+        customRequestHeaders:
+          X-Forwarded-Proto: https
+
+    # Secure headers for API
+    secure-headers:
+      headers:
+        accessControlAllowMethods:
+          - GET
+          - OPTIONS
+          - PUT
+          - POST
+          - DELETE
+          - PATCH
+        accessControlAllowOriginList:
+          - https://meeting-ops.local
+          - https://auth.meeting-ops.local
+        accessControlMaxAge: 100
+        addVaryHeader: true
+        customRequestHeaders:
+          X-Forwarded-Proto: https
+
+    # Rate limiting
+    api-ratelimit:
+      rateLimit:
+        average: 100
+        burst: 200
+        period: 1m
+
+    # WebSocket support
+    websocket:
+      headers:
+        customRequestHeaders:
+          X-Forwarded-Proto: https
+          Connection: upgrade
+          Upgrade: websocket
+
+    # CORS for API
+    api-cors:
+      headers:
+        accessControlAllowCredentials: true
+        accessControlAllowHeaders:
+          - "*"
+        accessControlAllowMethods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+          - PATCH
+        accessControlAllowOriginList:
+          - https://meeting-ops.local
+          - https://auth.meeting-ops.local
+        accessControlMaxAge: 100
+        addVaryHeader: true
+
+  # Services
+  services:
+    # Authentik outpost for forward auth
+    authentik:
+      loadBalancer:
+        servers:
+          - url: "http://authentik-server:9000/outpost.goauthentik.io/auth/traefik"
+        passHostHeader: true
+
+  # Routers
+  routers:
+    # API routes with authentication
+    api:
+      rule: "Host(`meeting-ops.local`) && PathPrefix(`/api`)"
+      middlewares:
+        - authentik@docker
+        - secure-headers
+        - api-cors
+        - api-ratelimit
+      tls:
+        certResolver: letsencrypt
+      service: backend
+
+    # WebSocket routes with authentication
+    websocket:
+      rule: "Host(`meeting-ops.local`) && PathPrefix(`/ws`)"
+      middlewares:
+        - authentik@docker
+        - websocket
+      tls:
+        certResolver: letsencrypt
+      service: backend
+
+# TLS Configuration
+tls:
+  options:
+    default:
+      sslProtocols:
+        - "TLSv1.2"
+        - "TLSv1.3"
+      cipherSuites:
+        - "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"
+        - "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305"
+        - "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"
+        - "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256"
+      curvePreferences:
+        - "CurveP521"
+        - "CurveP384"
+      minVersion: "VersionTLS12"

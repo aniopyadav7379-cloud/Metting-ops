@@ -1,0 +1,9 @@
+[Unit]
+Description=Unicorn Commander Meeting Ops - Complete System
+Documentation=https://github.com/unicorn-commander/meeting-ops
+Requires=unicorn-commander-backend.service
+Wants=unicorn-commander-nginx.service
+After=unicorn-commander-backend.service unicorn-commander-nginx.service
+
+[Install]
+WantedBy=multi-user.target

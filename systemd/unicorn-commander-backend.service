@@ -1,0 +1,56 @@
+[Unit]
+Description=Unicorn Commander Meeting Ops Backend
+Documentation=https://github.com/unicorn-commander/meeting-ops
+After=network.target network-online.target
+Requires=network-online.target
+StartLimitIntervalSec=500
+StartLimitBurst=5
+
+[Service]
+Type=exec
+User=unicorn
+Group=unicorn
+WorkingDirectory=/opt/unicorn-commander/backend
+Environment="PATH=/opt/unicorn-commander/backend/venv/bin"
+Environment="PYTHONPATH=/opt/unicorn-commander/backend"
+Environment="DATABASE_URL=sqlite:////opt/unicorn-commander/data/meeting_sessions.db"
+Environment="SECRET_KEY=your-super-secret-key-change-this-in-production"
+Environment="ALLOW_REGISTRATION=false"
+Environment="CORS_ORIGINS=http://localhost:3000,https://your-domain.com"
+
+# Audio device access
+SupplementaryGroups=audio
+
+# NPU device access (if available)
+DeviceAllow=/dev/accel/accel0 rw
+DeviceAllow=/dev/dri/renderD128 rw
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/unicorn-commander/data
+ReadWritePaths=/opt/unicorn-commander/storage
+ReadWritePaths=/tmp
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=4096
+
+# Service configuration
+ExecStart=/opt/unicorn-commander/backend/venv/bin/python -m uvicorn main:app --host 0.0.0.0 --port 9050 --workers 1
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+KillSignal=SIGINT
+TimeoutStopSec=30
+Restart=always
+RestartSec=10
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=unicorn-commander-backend
+
+[Install]
+WantedBy=multi-user.target

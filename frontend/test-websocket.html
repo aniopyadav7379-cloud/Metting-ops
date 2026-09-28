@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Transcription Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        #status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            background: #333;
+        }
+        #transcriptions {
+            min-height: 300px;
+            border: 1px solid #444;
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 5px;
+            background: #222;
+            overflow-y: auto;
+            max-height: 400px;
+        }
+        .transcription {
+            margin: 10px 0;
+            padding: 10px;
+            background: #2a2a2a;
+            border-left: 3px solid #4CAF50;
+            border-radius: 3px;
+        }
+        .error {
+            color: #ff6b6b;
+        }
+        .success {
+            color: #51cf66;
+        }
+        .info {
+            color: #339af0;
+        }
+    </style>
+</head>
+<body>
+    <h1>WebSocket Transcription Test</h1>
+    
+    <div id="status">Status: Not connected</div>
+    
+    <div>
+        <button onclick="createSession()">1. Create Session</button>
+        <button onclick="startRecording()" id="startBtn" disabled>2. Start Recording</button>
+        <button onclick="connectWebSocket()" id="connectBtn" disabled>3. Connect WebSocket</button>
+        <button onclick="stopRecording()" id="stopBtn" disabled>4. Stop Recording</button>
+    </div>
+    
+    <div>
+        <h3>Session Info:</h3>
+        <div id="sessionInfo">No session created</div>
+    </div>
+    
+    <div>
+        <h3>Transcriptions:</h3>
+        <div id="transcriptions"></div>
+    </div>
+    
+    <script>
+        let ws = null;
+        let sessionId = null;
+        let token = null;
+        
+        // Get token on page load
+        window.onload = () => {
+            token = localStorage.getItem('access_token');
+            if (!token) {
+                updateStatus('No auth token found! Please login first.', 'error');
+            } else {
+                updateStatus('Auth token found. Click "Create Session" to begin.', 'info');
+            }
+        };
+        
+        function updateStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.textContent = `Status: ${message}`;
+            status.className = type;
+            console.log(`[${type}]`, message);
+        }
+        
+        function addTranscription(text, type = 'transcription') {
+            const div = document.createElement('div');
+            div.className = 'transcription';
+            div.innerHTML = `
+                <strong>${type}:</strong> ${text}
+                <br><small>${new Date().toLocaleTimeString()}</small>
+            `;
+            document.getElementById('transcriptions').appendChild(div);
+            div.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        async function createSession() {
+            try {
+                const response = await fetch('http://localhost:9050/api/recording-sessions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title: `Test Session ${new Date().toLocaleTimeString()}`,
+                        is_realtime: true
+                    })
+                });
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const session = await response.json();
+                sessionId = session.id;
+                
+                document.getElementById('sessionInfo').innerHTML = `
+                    Session ID: <strong>${sessionId}</strong><br>
+                    Title: ${session.title}<br>
+                    Status: ${session.status}
+                `;
+                
+                updateStatus('Session created! Now start recording.', 'success');
+                document.getElementById('startBtn').disabled = false;
+                
+            } catch (error) {
+                updateStatus(`Failed to create session: ${error.message}`, 'error');
+            }
+        }
+        
+        async function startRecording() {
+            try {
+                const response = await fetch(`http://localhost:9050/api/recording-sessions/${sessionId}/start`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                updateStatus('Recording started! Now connect WebSocket.', 'success');
+                document.getElementById('connectBtn').disabled = false;
+                document.getElementById('stopBtn').disabled = false;
+                document.getElementById('startBtn').disabled = true;
+                
+            } catch (error) {
+                updateStatus(`Failed to start recording: ${error.message}`, 'error');
+            }
+        }
+        
+        function connectWebSocket() {
+            const wsUrl = `ws://localhost:9050/ws/transcription/${sessionId}`;
+            updateStatus(`Connecting to WebSocket: ${wsUrl}`, 'info');
+            
+            ws = new WebSocket(wsUrl);
+            
+            ws.onopen = () => {
+                updateStatus('WebSocket connected! Speak into your microphone.', 'success');
+                addTranscription('WebSocket connection established', 'STATUS');
+                document.getElementById('connectBtn').disabled = true;
+            };
+            
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    console.log('Received:', data);
+                    
+                    if (data.type === 'transcription' && data.data) {
+                        addTranscription(data.data.text || 'No text', 'TRANSCRIPTION');
+                    } else if (data.type === 'partial' && data.text) {
+                        addTranscription(data.text, 'PARTIAL');
+                    } else if (data.type === 'error') {
+                        addTranscription(data.message || 'Unknown error', 'ERROR');
+                    } else {
+                        addTranscription(JSON.stringify(data), 'RAW MESSAGE');
+                    }
+                } catch (err) {
+                    addTranscription(`Parse error: ${err.message}`, 'ERROR');
+                }
+            };
+            
+            ws.onerror = (error) => {
+                updateStatus('WebSocket error occurred', 'error');
+                console.error('WebSocket error:', error);
+            };
+            
+            ws.onclose = () => {
+                updateStatus('WebSocket disconnected', 'info');
+                document.getElementById('connectBtn').disabled = false;
+            };
+        }
+        
+        async function stopRecording() {
+            try {
+                if (ws) {
+                    ws.close();
+                    ws = null;
+                }
+                
+                const response = await fetch(`http://localhost:9050/api/recording-sessions/${sessionId}/stop`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                updateStatus('Recording stopped!', 'success');
+                document.getElementById('stopBtn').disabled = true;
+                
+            } catch (error) {
+                updateStatus(`Failed to stop recording: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,69 @@
+/* Self-hosted Meeting-Ops brand typography.
+ *
+ * Inter (UI) + Space Grotesk (display) are served from /public/fonts/*.woff2
+ * instead of fonts.googleapis.com so the app can run under a strict CSP and
+ * cross-origin isolation (no third-party font/style origins to allow-list).
+ *
+ * Files are the Google Fonts `latin` subset woff2 (unicode-range U+0000-00FF
+ * plus common punctuation/symbols). Inter/Space Grotesk ship as variable fonts
+ * upstream, so one latin woff2 per family covers every weight via the weight
+ * axis declared per @font-face below. font-display: swap matches the original
+ * &display=swap so text paints immediately in the fallback then swaps.
+ *
+ * To refresh: re-fetch the Google Fonts CSS with a desktop Chrome UA and
+ * re-download the latin-block woff2 for each (family, weight). See the
+ * production-readiness Phase 1 notes.
+ */
+
+/* Inter — UI text */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/Inter-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/Inter-500.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/Inter-600.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/Inter-700.woff2') format('woff2');
+}
+
+/* Space Grotesk — display / headings */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/SpaceGrotesk-500.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/SpaceGrotesk-600.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/SpaceGrotesk-700.woff2') format('woff2');
+}

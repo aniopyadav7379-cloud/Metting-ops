@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login Test</title>
+</head>
+<body>
+    <h1>Login Test</h1>
+    <form id="loginForm">
+        <input type="text" id="username" placeholder="Username" value="admin"><br><br>
+        <input type="password" id="password" placeholder="Password" value="Changeme123!"><br><br>
+        <button type="submit">Login</button>
+    </form>
+    
+    <div id="result"></div>
+    
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const resultDiv = document.getElementById('result');
+            
+            resultDiv.innerHTML = 'Testing login...<br>';
+            
+            try {
+                const formData = new FormData();
+                formData.append('username', username);
+                formData.append('password', password);
+                
+                console.log('Making request to /api/auth/login');
+                resultDiv.innerHTML += 'Making request...<br>';
+                
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    body: formData,
+                });
+                
+                console.log('Response received:', response);
+                resultDiv.innerHTML += `Response status: ${response.status}<br>`;
+                resultDiv.innerHTML += `Response ok: ${response.ok}<br>`;
+                resultDiv.innerHTML += `Response headers: ${JSON.stringify([...response.headers.entries()])}<br>`;
+                
+                if (response.ok) {
+                    const responseText = await response.text();
+                    console.log('Response text:', responseText);
+                    resultDiv.innerHTML += `Response text: ${responseText}<br>`;
+                    
+                    try {
+                        const data = JSON.parse(responseText);
+                        console.log('Parsed JSON:', data);
+                        resultDiv.innerHTML += `✅ Login successful!<br>`;
+                        resultDiv.innerHTML += `User: ${data.user.username}<br>`;
+                        resultDiv.innerHTML += `Token length: ${data.access_token.length}<br>`;
+                    } catch (jsonError) {
+                        console.error('JSON parse error:', jsonError);
+                        resultDiv.innerHTML += `❌ JSON parse error: ${jsonError.message}<br>`;
+                    }
+                } else {
+                    const errorText = await response.text();
+                    console.log('Error response text:', errorText);
+                    resultDiv.innerHTML += `❌ Login failed: ${response.status}<br>`;
+                    resultDiv.innerHTML += `Error: ${errorText}<br>`;
+                }
+            } catch (error) {
+                console.error('Request failed:', error);
+                resultDiv.innerHTML += `❌ Request failed: ${error.message}<br>`;
+            }
+        });
+    </script>
+</body>
+</html>

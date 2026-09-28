@@ -1,0 +1,30 @@
+{
+  "filename": "synthetic_2speaker.wav",
+  "expected_speaker_count": 2,
+  "expected_min_embedding_distance": 0.4,
+  "duration_seconds": 33.72,
+  "sample_rate_hz": 16000,
+  "channels": 1,
+  "bits_per_sample": 16,
+  "source": "Synthesized 2026-05-22 via Kokoro TTS on bigboy (unicorn-kokoro). Speaker A = af_bella (English female, ~15.2s), 0.5s silence gap, Speaker B = am_michael (English male, ~18.0s). Concatenated with ffmpeg, resampled to 16 kHz mono PCM.",
+  "speaker_a_id": "kokoro:af_bella",
+  "speaker_a_duration_seconds": 15.23,
+  "speaker_a_transcript": "Welcome everyone to todays test meeting. I am the first speaker, and I will be discussing the quarterly results from our diarization pipeline. We have seen consistent performance across all of the synthetic benchmarks that we have run this past month.",
+  "speaker_b_id": "kokoro:am_michael",
+  "speaker_b_duration_seconds": 17.98,
+  "speaker_b_transcript": "Thank you for that introduction. I am the second speaker, and I have a different perspective to share. The pipeline state degradation we observed last week was particularly concerning. We need a stronger probe to catch it earlier in the future, before it impacts real user sessions.",
+  "ground_truth_segments": [
+    { "start_seconds": 0.0, "end_seconds": 15.23, "speaker": "A" },
+    { "start_seconds": 15.73, "end_seconds": 33.71, "speaker": "B" }
+  ],
+  "verified_against_pipeline": {
+    "verified_at": "2026-05-22",
+    "backend": "pyannote-community-1",
+    "wespeaker_model": "pyannote/wespeaker-voxceleb-resnet34-LM",
+    "observed_speaker_count": 2,
+    "observed_segments": 3,
+    "observed_cosine_similarity_between_centroids": 0.023,
+    "observed_cosine_distance_between_centroids": 0.977
+  },
+  "notes": "TTS-synthesized speakers are easy mode for diarization (different vocal tracts, clean signal). That is exactly what a probe wants: a known-good input where any failure to return 2 speakers indicates pipeline degradation, not signal ambiguity. Real-meeting diarization quality is measured separately."
+}

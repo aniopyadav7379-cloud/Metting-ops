@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/brand/favicon-32.png?v=3" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/brand/pwa-512.png?v=3" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#1b3a6b" />
+    <meta name="color-scheme" content="dark light" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/brand/apple-touch-icon.png?v=3" />
+    <!-- Meeting-Ops brand typography: Space Grotesk (display) + Inter (UI).
+         Self-hosted (see src/fonts.css) so the app can enforce a strict CSP +
+         cross-origin isolation with no fonts.googleapis.com / fonts.gstatic.com
+         origins to allow-list. -->
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/Inter-400.woff2" />
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/SpaceGrotesk-600.woff2" />
+    <link rel="stylesheet" href="/fonts.css" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Meet-Ops" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <title>Meeting-Ops — Meetings become memory, decisions, and work</title>
+    <!-- SEO + social link previews. The on-device / privacy-first moat is the
+         share hook. og:image uses the canonical public host so previews
+         render the product shot regardless of which host embeds the link. -->
+    <link rel="canonical" href="https://meeting-ops.unicorncommander.ai/" />
+    <meta
+      name="description"
+      content="Meeting-Ops turns every conversation into decisions, action items, and searchable memory. Live transcription in your browser, studio-grade records with speaker recognition, cross-meeting AI chat, and a knowledge graph. Free to start; open source if you'd rather self-host."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Meeting-Ops" />
+    <meta property="og:title" content="Meeting-Ops — your meetings become memory, decisions, and work" />
+    <meta
+      property="og:description"
+      content="Records and transcribes meetings, identifies who said what, captures decisions and action items, and turns approved commitments into tracked work. Free tier runs in your browser; open source for self-hosting."
+    />
+    <meta property="og:url" content="https://meeting-ops.unicorncommander.ai/" />
+    <meta property="og:image" content="https://meeting-ops.unicorncommander.ai/screenshots/dashboard.png" />
+    <meta property="og:image:width" content="1986" />
+    <meta property="og:image:height" content="953" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Meeting-Ops — your meetings become memory, decisions, and work" />
+    <meta
+      name="twitter:description"
+      content="AI meeting intelligence: live browser transcription, speaker recognition, decisions and action items, cross-meeting search. Free to start · open source · Privacy Mode built in."
+    />
+    <meta name="twitter:image" content="https://meeting-ops.unicorncommander.ai/screenshots/dashboard.png" />
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Meeting-Ops",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web, iOS 17.0+, macOS (Apple Silicon)",
+      "url": "https://meeting-ops.unicorncommander.ai/",
+      "description": "AI meeting intelligence that turns conversations into decisions, action items, and searchable organizational memory. Live transcription runs in the browser; a studio-grade server pass adds speaker recognition, summaries, and cross-meeting search.",
+      "offers": [
+        { "@type": "Offer", "name": "Free", "price": "0", "priceCurrency": "USD" },
+        { "@type": "Offer", "name": "Pro", "price": "15", "priceCurrency": "USD", "description": "Monthly subscription — launch pricing ($20 list). Server pass: studio transcripts, speaker diarization and voice recognition, AI summaries with action items, cross-meeting chat and search, knowledge graph." }
+      ],
+      "publisher": { "@type": "Organization", "name": "Magic Unicorn Unconventional Technology & Stuff Inc.", "url": "https://magicunicorn.tech" },
+      "sameAs": ["https://apps.apple.com/us/app/meeting-ops/id6780018348"]
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Where does the processing actually happen?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Live transcription and rolling summaries run on your device, in your browser. The optional studio-grade pass (speaker recognition, polished summaries, cross-meeting search) runs on hardware we operate — not piped to a third-party AI cloud. Privacy Mode keeps everything on-device." }
+        },
+        {
+          "@type": "Question",
+          "name": "Is Meeting-Ops free?",
+          "acceptedAnswer": { "@type": "Answer", "text": "The live, on-device experience is free forever — no credit card. Pro ($15/month launch pricing, $20 list) adds the server pass: studio transcripts, speaker identification, deeper summaries with action items, cross-meeting AI chat, and the knowledge graph." }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I self-host Meeting-Ops?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. Meeting-Ops is offered open source, and the full stack can run on infrastructure you control — cloud, on-prem, or an appliance. Most customers use the managed SaaS; self-hosting is there when data residency demands it." }
+        },
+        {
+          "@type": "Question",
+          "name": "Does Meeting-Ops identify who said what?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. It separates speakers turn by turn and learns voices over time, so recurring people are recognized automatically across meetings — name someone once and they stay named." }
+        }
+      ]
+    }
+    </script>
+    <script>
+      // The app is a HashRouter SPA, so it only honors /#/route. Public pages
+      // (pricing/signup/login) are meant to be typed and shared as real paths,
+      // e.g. meetingops.magicunicorn.dev/pricing. Landing on the real path with
+      // no hash would otherwise fall back to "/" -> /dashboard. Rewrite to the
+      // hash form before React mounts so those links just work. No loop: after
+      // the rewrite the hash is set, so the guard is false.
+      (function () {
+        var path = window.location.pathname.replace(/\/+$/, '');
+        if (!window.location.hash && /^\/(pricing|signup|login|terms|privacy|aup|founding-100|contact|forgot-password|reset-password)$/.test(path)) {
+          window.location.replace(
+            window.location.origin + '/#' + path + window.location.search
+          );
+        }
+      })();
+    </script>
+    <script defer src="https://analytics.unicorncommander.ai/script.js" data-website-id="43f0b3d0-9db4-4a75-86f0-a06aa1827010"></script>
+  </head>
+  <body class="bg-gray-900" style="background:#0a1226;">
+    <div id="root">
+      <!-- Branded static shell. Three jobs: (1) what a no-JS / pre-JS agent
+           (crawler, link unfurler, auditor) reads instead of a bare
+           "Loading…" line; (2) the splash users see for the moment before
+           React mounts (React replaces all of it); (3) the graceful
+           fallback if the bundle genuinely fails. Inline styles only — the
+           Tailwind CSS bundle hasn't loaded yet when this renders. -->
+      <div style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:32px 20px; text-align:center; color:#f0f3fa; font-family:'Space Grotesk','Inter',Arial,sans-serif; background:radial-gradient(ellipse 70% 50% at 50% 0%, rgba(212,175,55,0.10), transparent 70%);">
+        <div style="max-width:680px;">
+          <img src="/brand/meeting-ops-mark.png?v=3" alt="Meeting-Ops — the officer unicorn" width="96" height="96" style="display:block; margin:0 auto 18px;" />
+          <h1 style="font-size:26px; margin:0 0 8px; letter-spacing:0.3px;">Meeting-Ops</h1>
+          <p style="color:#d4af37; font-size:15px; margin:0 0 14px;">Your meetings become memory, decisions, and work.</p>
+          <div id="mo-static-pitch">
+            <p style="color:#aab8d4; font-size:13.5px; line-height:1.6; margin:0 auto 20px; max-width:560px;">
+              Live transcription in your browser, studio-grade records with
+              speaker recognition, and decisions that become tracked work.
+              Free to start — open source if you&rsquo;d rather self-host.
+            </p>
+            <p style="margin:0 0 22px;">
+              <a href="/#/signup" style="display:inline-block; background:#d4af37; color:#101a30; font-weight:600; font-size:13.5px; padding:10px 18px; border-radius:9px; text-decoration:none; margin:4px 6px;">Start free</a>
+              <a href="https://apps.apple.com/us/app/meeting-ops/id6780018348" style="display:inline-block; color:#e8ecf5; font-size:13.5px; padding:10px 18px; border-radius:9px; text-decoration:none; border:1px solid rgba(255,255,255,0.22); margin:4px 6px;">iPhone &amp; Mac app</a>
+            </p>
+          </div>
+          <p id="mo-boot-hint" style="color:#8895b3; font-size:12px; margin:0;">Loading the app&hellip;</p>
+          <noscript>
+            <!-- Crawlable product summary for no-JS agents (search engines,
+                 link unfurlers). The React landing replaces all of this on
+                 mount. -->
+            <section style="max-width:640px; margin:24px auto 0; text-align:left; color:#c8d6ed; font-size:14px; line-height:1.6;">
+              <h2>Your meetings become memory, decisions, and work.</h2>
+              <p>
+                Meeting-Ops records and transcribes meetings live in your browser,
+                identifies who said what, captures decisions and action items, and
+                turns approved commitments into tracked work in Project-Ops. Every
+                meeting feeds a searchable library and a knowledge graph you can
+                ask questions across.
+              </p>
+              <ul>
+                <li>Free forever tier: live on-device transcription and rolling summaries — no credit card.</li>
+                <li>Pro ($15/month launch pricing): studio-grade transcripts, speaker recognition that learns voices across meetings, summaries with action items, cross-meeting AI chat, knowledge graph.</li>
+                <li>Open source — self-host the full stack, or use the managed cloud.</li>
+                <li>Privacy Mode keeps a conversation entirely on your device.</li>
+                <li>Also on the App Store for iPhone, iPad, Mac, and Apple Vision.</li>
+              </ul>
+              <p style="color:#f87171;">JavaScript is required to run the application itself.</p>
+            </section>
+          </noscript>
+        </div>
+      </div>
+    </div>
+    <script>
+      // Returning signed-in users deep-linking into the app shouldn't get a
+      // marketing flash: hide the pitch/CTA block when there's evidence of a
+      // session (org sticky or app JWT). The logo + tagline splash stays.
+      // If the bundle never mounts, upgrade the hint after 8s.
+      (function () {
+        try {
+          if (localStorage.getItem('meetingops.activeOrg') || localStorage.getItem('access_token')) {
+            var pitch = document.getElementById('mo-static-pitch');
+            if (pitch) pitch.style.display = 'none';
+          }
+        } catch (e) { /* storage blocked — keep the pitch */ }
+        setTimeout(function () {
+          var hint = document.getElementById('mo-boot-hint');
+          if (hint) hint.textContent = 'Still loading — a slow connection or an extension may be blocking the app. Reloading usually fixes it.';
+        }, 8000);
+      })();
+    </script>
+    <script>
+      // Keep a quiet global error hook for real failures; the two boot
+      // console.logs (script-executing / user-agent) were dev noise, removed.
+      window.addEventListener('error', function (e) {
+        console.error('Meeting-Ops error:', e.message, e.filename, e.lineno, e.colno);
+      });
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

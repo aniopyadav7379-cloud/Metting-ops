@@ -1,0 +1,63 @@
+# Backend Dockerfile - Python 3.12 + NPU Support + PostgreSQL
+FROM python:3.12-slim
+
+# Install system dependencies for NPU, audio, and PostgreSQL
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    portaudio19-dev \
+    ffmpeg \
+    git \
+    curl \
+    cmake \
+    libasound2-dev \
+    postgresql-client \
+    libpq-dev \
+    jq \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Copy requirements file
+COPY requirements-docker-minimal.txt ./
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements-docker-minimal.txt
+
+# Install additional dependencies for PostgreSQL and Qdrant
+RUN pip install --no-cache-dir \
+    psycopg2-binary \
+    qdrant-client \
+    sentence-transformers
+
+# Copy application code
+COPY . .
+
+# Copy initialization scripts
+COPY scripts/init_postgres_qdrant.sh /docker-entrypoint-initdb.d/
+COPY scripts/init_postgres_fresh.sh /docker-entrypoint-initdb.d/
+RUN chmod +x /docker-entrypoint-initdb.d/*.sh
+
+# Create directories for data and NPU kernels
+RUN mkdir -p /app/data /app/recordings /app/whisper_onnx_cache /app/npu_kernels
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV DOCKER_ENV=true
+ENV PYTHON_VERSION=3.13
+ENV NPU_KERNEL_CACHE_DIR=/app/npu_kernels
+
+# NPU/XRT environment (when available)
+ENV XRT_INI_PATH=/opt/xilinx/xrt/xrt.ini
+ENV XILINX_XRT=/opt/xilinx/xrt
+
+# Expose port
+EXPOSE 9050
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:9050/api/health || exit 1
+
+# Run initialization and start the application
+ENTRYPOINT ["/bin/bash", "-c"]
+CMD ["/docker-entrypoint-initdb.d/init_postgres_qdrant.sh && python -m uvicorn main:app --host 0.0.0.0 --port 9050"]

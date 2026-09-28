@@ -1,0 +1,5 @@
+FROM gemma3:12b
+
+# Set GPU usage
+PARAMETER num_gpu 999
+PARAMETER num_thread 8

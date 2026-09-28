@@ -1,0 +1,30 @@
+[Unit]
+Description=Unicorn Commander Meeting Ops Backend
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/srv/meeting-ops/backend
+Environment="PATH=/srv/meeting-ops/backend/venv/bin"
+Environment="PYTHONPATH=/srv/meeting-ops/backend"
+Environment="DATABASE_URL=sqlite:///./meeting_sessions.db"
+ExecStart=/srv/meeting-ops/backend/venv/bin/python -m uvicorn main:app --host 0.0.0.0 --port 80
+Restart=always
+RestartSec=10
+
+# Security settings
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/srv/meeting-ops/backend
+PrivateTmp=true
+
+# Allow binding to privileged ports
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+
+[Install]
+WantedBy=multi-user.target

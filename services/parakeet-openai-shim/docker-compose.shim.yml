@@ -1,0 +1,47 @@
+# Run the OpenAI-compatible STT shim alongside parakeet-svc.
+#
+# Usage (on midboy1 / bigboy, from this directory):
+#   docker compose -f docker-compose.shim.yml up -d --build
+#
+# This file ONLY defines the shim. parakeet-svc is expected to already be
+# running (it owns the GPU). The shim reaches it over the shared
+# `meet-internal` network as http://meet-parakeet-svc:8881. If you instead want
+# to reach parakeet-svc over Tailscale, drop the `networks:` block and set
+# PARAKEET_URL=http://meet-parakeet-svc:8881 below.
+services:
+  parakeet-openai-shim:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: meet-parakeet-openai-shim:local
+    container_name: meet-parakeet-openai-shim
+    restart: unless-stopped
+    # Host SHIM_PORT -> container SHIM_PORT. Bind to localhost; the UC gateway
+    # (LiteLLM) should be the only thing that talks to this, over the internal
+    # network or an SSH/Tailscale hop — there is no public ingress here.
+    ports:
+      - "127.0.0.1:8011:8011"
+    environment:
+      # --- where parakeet-svc lives ---
+      PARAKEET_URL: "http://meet-parakeet-svc:8881"
+      # --- this shim ---
+      SHIM_PORT: "8011"
+      STT_MODEL_NAME: "parakeet"
+      # --- metering (LOCKED contract) ---
+      # Internal: http://ops-center:8084/api/v1/metered/report
+      # Public:   https://api.unicorncommander.ai/api/v1/metered/report
+      METERED_REPORT_URL: "${METERED_REPORT_URL:-http://ops-center:8084/api/v1/metered/report}"
+      FEDERATION_KEY: "${FEDERATION_KEY:-}"
+      ORG_HEADER: "${ORG_HEADER:-X-Org-Id}"
+      # --- timeout knobs (mirror impl_stt.py: base 60s + 2s/MB) ---
+      PARAKEET_TIMEOUT_BASE: "60.0"
+      PARAKEET_TIMEOUT_PER_MB: "2.0"
+      METERING_TIMEOUT: "3.0"
+      LOG_LEVEL: "INFO"
+    networks:
+      - meet-internal
+
+# parakeet-svc creates/owns this network in its own deploy; we attach to it.
+networks:
+  meet-internal:
+    external: true

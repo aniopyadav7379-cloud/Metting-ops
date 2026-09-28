@@ -1,0 +1,60 @@
+{
+  "endpoints": [
+    {
+      "name": "local_gemma3n",
+      "provider": "local_ollama",
+      "url": "http://localhost:11434",
+      "api_key": null,
+      "model": "gemma3n:e4b",
+      "context_window": 8192,
+      "max_tokens": 4096,
+      "temperature": 0.7,
+      "enabled": true,
+      "priority": 1,
+      "description": "Local Gemma3n E4B optimized for AMD 8945HS with NPU"
+    },
+    {
+      "name": "remote_gemma3_27b",
+      "provider": "remote_ollama",
+      "url": "http://192.168.1.135:11434",
+      "api_key": null,
+      "model": "gemma2:9b",
+      "context_window": 8192,
+      "max_tokens": 8192,
+      "temperature": 0.7,
+      "enabled": true,
+      "priority": 2,
+      "description": "Remote Gemma2 9B for testing"
+    },
+    {
+      "name": "openai_gpt4",
+      "provider": "openai",
+      "url": "https://api.openai.com/v1",
+      "api_key": "",
+      "model": "gpt-4-turbo-preview",
+      "context_window": 128000,
+      "max_tokens": 4096,
+      "temperature": 0.7,
+      "enabled": false,
+      "priority": 3,
+      "description": "OpenAI GPT-4 Turbo"
+    },
+    {
+      "name": "anthropic_claude",
+      "provider": "anthropic",
+      "url": "https://api.anthropic.com/v1",
+      "api_key": "",
+      "model": "claude-3-opus-20240229",
+      "context_window": 200000,
+      "max_tokens": 4096,
+      "temperature": 0.7,
+      "enabled": false,
+      "priority": 4,
+      "description": "Anthropic Claude 3 Opus"
+    }
+  ],
+  "active_endpoint": "local_gemma3n",
+  "fallback_enabled": true,
+  "timeout_seconds": 30,
+  "retry_attempts": 3
+}

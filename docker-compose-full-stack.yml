@@ -1,0 +1,141 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: meetingops-postgres
+    environment:
+      - POSTGRES_USER=meetingops
+      - POSTGRES_PASSWORD=meetingops123
+      - POSTGRES_DB=meeting_sessions
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+    networks:
+      - meetingops-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U meetingops"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: meetingops-redis
+    ports:
+      - "6381:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - meetingops-network
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Qdrant Vector Database
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: meetingops-qdrant
+    ports:
+      - "6335:6333"
+      - "6336:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    networks:
+      - meetingops-network
+    restart: unless-stopped
+    environment:
+      - QDRANT__LOG_LEVEL=INFO
+      - QDRANT__SERVICE__GRPC_PORT=6334
+
+  # GPU-accelerated llama.cpp for AI operations.
+  #
+  # OPTIONAL / opt-in via the "gpu" Compose profile — NOT started by a plain
+  # `docker compose up`. This image is hardcoded to an AMD 780M iGPU Vulkan
+  # setup requiring /dev/dri + /dev/kfd, which most machines (including
+  # Windows/WSL2 Docker Desktop without a passed-through iGPU) do not have.
+  # The application does not require this service: LLM/embedding providers
+  # are configured per-organization in Settings -> Provider Settings, and
+  # LLAMA_CPP_URL (see backend/.env.example) is one optional local provider
+  # among several (Lyzr, LiteLLM/OpenAI/Anthropic/etc.) — the app runs fully
+  # without it. Bring it up explicitly on a machine with a supported AMD
+  # iGPU: `docker compose -f docker-compose-full-stack.yml --profile gpu up`.
+  llama-gpu:
+    profiles: ["gpu"]
+    image: ghcr.io/ggml-org/llama.cpp:server-vulkan
+    container_name: meetingops-llama-gpu
+    restart: unless-stopped
+    
+    # AMD 780M iGPU Configuration
+    environment:
+      - HSA_OVERRIDE_GFX_VERSION=11.0.0
+      - AMD_VULKAN_ICD=RADV
+      - AMD_LOG_LEVEL=1
+      - GPU_MAX_HEAP_SIZE=100
+      - GPU_MAX_ALLOC_PERCENT=100
+      - GPU_SINGLE_ALLOC_PERCENT=100
+      - VK_LOADER_DEBUG=none
+      - MESA_VK_VERSION_OVERRIDE=1.3
+
+    # GPU device access
+    devices:
+      - "/dev/dri:/dev/dri"
+      - "/dev/kfd:/dev/kfd"
+
+    security_opt:
+      - seccomp:unconfined
+
+    volumes:
+      - "./models:/models"
+      - llama_cache:/tmp/vulkan_cache
+
+    ports:
+      - "11437:8080"
+
+    # Server startup with full GPU offloading (GPT-OSS-20B MXFP4 via HMA)
+    command: >
+      --model /models/gpt-oss-20b-mxfp4.gguf
+      --host 0.0.0.0
+      --port 8080
+      --ctx-size 32768
+      --batch-size 2048
+      --ubatch-size 2048
+      --gpu-layers 99
+      --jinja
+      --flash-attn on
+      --verbose
+      --threads 4
+      --parallel 1
+    
+    networks:
+      - meetingops-network
+      
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+
+networks:
+  meetingops-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  qdrant_data:
+    driver: local
+  llama_cache:
+    driver: local

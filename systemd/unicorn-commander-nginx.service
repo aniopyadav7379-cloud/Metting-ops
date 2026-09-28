@@ -1,0 +1,18 @@
+[Unit]
+Description=Unicorn Commander Meeting Ops - Nginx Reverse Proxy
+Documentation=https://nginx.org/en/docs/
+After=network.target network-online.target nss-lookup.target
+Requires=network-online.target
+Wants=unicorn-commander-backend.service
+
+[Service]
+Type=forking
+PIDFile=/var/run/nginx-unicorn.pid
+ExecStartPre=/usr/sbin/nginx -t -c /opt/unicorn-commander/nginx/nginx.conf
+ExecStart=/usr/sbin/nginx -c /opt/unicorn-commander/nginx/nginx.conf
+ExecReload=/bin/sh -c "/bin/kill -s HUP $(/bin/cat /var/run/nginx-unicorn.pid)"
+ExecStop=/bin/sh -c "/bin/kill -s TERM $(/bin/cat /var/run/nginx-unicorn.pid)"
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

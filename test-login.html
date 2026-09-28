@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meeting-Ops Login Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1f2937;
+            color: white;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #374151;
+            background: #374151;
+            color: white;
+            border-radius: 4px;
+        }
+        button {
+            background: #7c3aed;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #6d28d9;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            background: #374151;
+        }
+        .success {
+            background: #065f46;
+            border: 1px solid #059669;
+        }
+        .error {
+            background: #7f1d1d;
+            border: 1px solid #dc2626;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔐 Meeting-Ops Authentication Test</h1>
+    
+    <form id="loginForm">
+        <div class="form-group">
+            <label for="username">Username:</label>
+            <input type="text" id="username" value="admin" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" value="admin123" required>
+        </div>
+        
+        <button type="submit">Login</button>
+    </form>
+    
+    <div id="result"></div>
+    
+    <div style="margin-top: 30px; border-top: 1px solid #374151; padding-top: 20px;">
+        <h3>Quick Actions:</h3>
+        <button onclick="testStatus()">Test API Status</button>
+        <button onclick="testSessions()">Test Sessions API</button>
+        <button onclick="openFrontend()">Open Frontend</button>
+    </div>
+
+    <script>
+        let authToken = null;
+        
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const resultDiv = document.getElementById('result');
+            
+            try {
+                resultDiv.innerHTML = '<div>🔄 Logging in...</div>';
+                
+                const response = await fetch('http://localhost:9050/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    authToken = data.access_token;
+                    
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            <h3>✅ Login Successful!</h3>
+                            <p><strong>User:</strong> ${data.user.username}</p>
+                            <p><strong>Email:</strong> ${data.user.email}</p>
+                            <p><strong>Role:</strong> ${data.user.role}</p>
+                            <p><strong>Token:</strong> ${authToken.substring(0, 50)}...</p>
+                        </div>
+                    `;
+                } else {
+                    const error = await response.text();
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <h3>❌ Login Failed</h3>
+                            <p>${error}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Error</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        });
+        
+        async function testStatus() {
+            const resultDiv = document.getElementById('result');
+            try {
+                const response = await fetch('http://localhost:9050/api/status');
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <div class="result success">
+                        <h3>📊 API Status</h3>
+                        <p><strong>Status:</strong> ${data.status}</p>
+                        <p><strong>NPU:</strong> ${data.npu.status}</p>
+                        <p><strong>Audio Devices:</strong> ${data.audio.devices_count}</p>
+                        <p><strong>Services:</strong> Recording: ${data.services.recording}, Transcription: ${data.services.transcription}</p>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result error">❌ ${error.message}</div>`;
+            }
+        }
+        
+        async function testSessions() {
+            const resultDiv = document.getElementById('result');
+            if (!authToken) {
+                resultDiv.innerHTML = '<div class="result error">❌ Please login first</div>';
+                return;
+            }
+            
+            try {
+                const response = await fetch('http://localhost:9050/api/simple/recording-sessions', {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <div class="result success">
+                        <h3>📁 Sessions (${data.length})</h3>
+                        <pre>${JSON.stringify(data.slice(0, 3), null, 2)}</pre>
+                        ${data.length > 3 ? '<p>... and more</p>' : ''}
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result error">❌ ${error.message}</div>`;
+            }
+        }
+        
+        function openFrontend() {
+            window.open('http://localhost:7778', '_blank');
+        }
+    </script>
+</body>
+</html>

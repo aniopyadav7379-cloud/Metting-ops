@@ -1,0 +1,65 @@
+{
+  "version": "meeting-ops.action-lifecycle.v1",
+  "endpoint": "POST /api/v1/triage/source-lifecycle",
+  "meetingOpsRefreshEndpoint": {
+    "route": "POST /api/action-items/sessions/{sessionId}/project-ops/reconcile",
+    "maximumItems": 100,
+    "scope": "authenticated organization and exact session",
+    "writesProjectOpsTaskStatus": false
+  },
+  "authentication": {
+    "audience": "project-ops",
+    "actor": "meeting-ops",
+    "workspaceSource": "Brigade-vouched workspace_id claim",
+    "defaultWorkspaceFallback": false
+  },
+  "request": {
+    "sourceActionItemIds": {
+      "type": "array<string>",
+      "maximumItems": 100,
+      "deduplicatedBeforeLookup": true
+    }
+  },
+  "response": {
+    "version": "meeting-ops.action-lifecycle.v1",
+    "correlationId": "opaque request id",
+    "containsMeetingText": false
+  },
+  "responseItem": {
+    "sourceActionItemId": "string",
+    "proposalId": "string",
+    "state": [
+      "proposed",
+      "approved_linked",
+      "rejected",
+      "sync_failed"
+    ],
+    "proposalStatus": "string",
+    "taskId": "string|null",
+    "taskUrl": "string|null; canonical <PROJECTOPS_PUBLIC_URL>/dashboard/tasks/<taskId>",
+    "taskStatus": [
+      "PENDING",
+      "IN_PROGRESS",
+      "WAITING_FOR_CLIENT",
+      "COMPLETED",
+      "CANCELLED",
+      null
+    ],
+    "projectNumber": "string|null",
+    "errorCode": "string|null",
+    "updatedAt": "ISO-8601"
+  },
+  "ownership": {
+    "meetingOpsStatus": "Meeting-Ops only",
+    "projectOpsTaskStatus": "Project-Ops only",
+    "localCompletionCompletesProjectOpsTask": false,
+    "taskUrlTaskIdMustEqualRecordTaskId": true,
+    "encodedRouteSeparatorsAllowed": false,
+    "terminalLinksDoNotReopen": true,
+    "staleOrConflictingRemoteRecordsDoNotOverwriteKnownLinks": true
+  },
+  "configuration": {
+    "projectOpsPublicUrl": "Meeting-Ops PROJECTOPS_PUBLIC_URL must equal the public Project-Ops FRONTEND_URL origin",
+    "allowedHttp": "loopback development only"
+  }
+}

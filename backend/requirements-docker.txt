@@ -1,0 +1,45 @@
+# Core dependencies for Docker
+fastapi==0.115.14
+sentry-sdk[fastapi]>=2.0
+uvicorn[standard]==0.35.0
+pydantic==2.11.7
+sqlalchemy==2.0.41
+alembic==1.16.4
+python-multipart==0.0.12
+aiofiles==24.1.0
+
+# Authentication
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+pyjwt==2.8.0
+
+# Audio processing
+PyAudio==0.2.14
+soundfile==0.12.1
+# webrtcvad-wheels is the maintained fork that drops the pkg_resources
+# import setuptools 81+ removed; otherwise drop-in (`import webrtcvad`).
+webrtcvad-wheels==2.0.14
+numpy==1.26.4
+
+# AI/ML
+onnx==1.15.0
+onnxruntime==1.22.0
+optimum[onnx]==1.23.0
+transformers==4.45.0
+torch==2.4.0
+torchaudio==2.4.0
+huggingface-hub==0.25.0
+
+# Speech processing
+# pyannote.audio==3.1.1  # Commented out for now due to conflicts
+
+# Utils
+psutil==5.9.8
+prometheus-client==0.21.1
+python-magic==0.4.27
+websockets==12.0
+httpx==0.28.1
+jinja2==3.1.4
+
+# Storage
+boto3==1.35.21

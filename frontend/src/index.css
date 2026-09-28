@@ -1,0 +1,90 @@
+@import './fonts.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* ---------------------------------------------------------------------------
+ * Landing page (marketing) motifs: scroll-reveal + the audio "waveform"
+ * heartbeat. Both are reduced-motion safe. No JS animation library.
+ * ------------------------------------------------------------------------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal.is-revealed {
+  opacity: 1;
+  transform: none;
+}
+
+@keyframes wave {
+  0%, 100% { transform: scaleY(0.4); }
+  50% { transform: scaleY(1); }
+}
+.wave > span {
+  transform-origin: bottom;
+  animation: wave 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  .wave > span {
+    animation: none !important;
+  }
+}
+
+/* Print (and PDF-save): scroll-reveal must never leave sections blank on
+ * paper — there is no scrolling to trigger the IntersectionObserver. */
+@media print {
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* AI Summary markdown renderer: ReactMarkdown wraps content in <p>/<ul>/etc.
+ * Tailwind's prose plugin is not installed, so spell out minimal spacing
+ * for the rendered tree inside .session-md. */
+.session-md > * + * { margin-top: 0.75rem; }
+.session-md p { line-height: 1.65; }
+.session-md strong { font-weight: 600; color: #111827; }
+.session-md em { font-style: italic; }
+.session-md ul { list-style: disc; padding-left: 1.25rem; }
+.session-md ol { list-style: decimal; padding-left: 1.25rem; }
+.session-md li { margin-top: 0.25rem; }
+.session-md h1, .session-md h2, .session-md h3, .session-md h4 {
+  font-weight: 600;
+  color: #111827;
+  margin-top: 1rem;
+}
+.session-md h1 { font-size: 1.25rem; }
+.session-md h2 { font-size: 1.1rem; }
+.session-md h3 { font-size: 1rem; }
+.session-md code {
+  background: rgba(0,0,0,0.05);
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+.session-md a { color: #7c3aed; text-decoration: underline; }

@@ -1,0 +1,118 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: unicorn-backend
+    volumes:
+      - ./data:/app/data
+      - ./recordings:/app/recordings
+      - ./whisper_cache:/app/whisper_onnx_cache
+      - /dev/snd:/dev/snd
+    environment:
+      - DATABASE_URL=postgresql://unicorn:${POSTGRES_PASSWORD}@postgres:5432/unicorn_commander
+      - PYTHONUNBUFFERED=1
+      - HUGGINGFACE_TOKEN=${HUGGINGFACE_TOKEN}
+      - SECRET_KEY=${SECRET_KEY}
+    devices:
+      - /dev/snd:/dev/snd
+    privileged: true
+    group_add:
+      - audio
+    networks:
+      - unicorn-network
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9050/health/ready"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build: ./frontend
+    container_name: unicorn-frontend
+    depends_on:
+      - backend
+    networks:
+      - unicorn-network
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: unicorn-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/logs:/var/log/nginx
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - unicorn-network
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: unicorn-db
+    environment:
+      - POSTGRES_USER=unicorn
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=unicorn_commander
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - unicorn-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U unicorn"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: unicorn-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - unicorn-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backup:
+    image: alpine:latest
+    container_name: unicorn-backup
+    volumes:
+      - ./data:/data
+      - ./recordings:/recordings
+      - ./backups:/backups
+      - postgres_data:/postgres_data:ro
+    command: >
+      sh -c "while true; do
+        echo 'Running backup...';
+        tar -czf /backups/backup-$$(date +%Y%m%d-%H%M%S).tar.gz /data /recordings;
+        find /backups -name 'backup-*.tar.gz' -mtime +7 -delete;
+        sleep 86400;
+      done"
+    networks:
+      - unicorn-network
+    restart: unless-stopped
+
+networks:
+  unicorn-network:
+    driver: bridge
+
+volumes:
+#   postgres_data:
+  redis_data:

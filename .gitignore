@@ -1,0 +1,160 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+venv313/
+venv-py313/
+env/
+ENV/
+.env
+
+# Virtual environments
+.venv/
+bin/
+lib/
+lib64/
+include/
+pyvenv.cfg
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+meeting_sessions.db
+
+# Audio files and recordings
+*.wav
+*.mp3
+*.m4a
+*.flac
+recordings/
+audio_files/
+# Bundled test fixtures (small, ground-truth-described, intentionally shipped)
+!services/speaker-svc/test_fixtures/*.wav
+
+# ML Models (large files)
+*.onnx
+*.pt
+*.pth
+*.bin
+*.npubin
+*.gguf
+models/
+whisper_models/
+whisper_onnx_cache/
+npu_kernels/
+*.xclbin
+
+# Node/Frontend
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dist/
+build/
+.npm
+.yarn
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Docker
+docker-compose.override.yml
+.dockerignore.local
+
+# Secrets and credentials
+secrets/
+credentials/
+*.key
+*.pem
+*.cert
+.env.local
+.env.production
+
+# Test files
+test_recording_*.wav
+test_audio.wav
+test_speech.wav
+pytest_cache/
+.coverage
+htmlcov/
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+tmp/
+temp/
+
+# OS files
+Thumbs.db
+desktop.ini
+
+# Project specific
+data/
+storage/
+whisperx_py313/
+*.whl
+shafen_call*.txt
+shafen_call*.json
+
+# AI Assistant Files
+AI_HANDOFF*.md
+*_PROMPT*.md
+GEMINI*.md
+DEEPSEEK.md
+Open-Interpreter-Status.md
+
+# But DO track
+!.gitkeep
+!requirements*.txt
+!package*.json
+
+# Development tracking files
+.duckversions/
+.postgres-initialized
+
+# Status and planning docs
+*STATUS*.md
+*CHECKLIST*.md
+*PLAN*.md
+*COMPLETION*.md
+
+# Temporary test scripts
+FIX_*.py
+test_*.html
+test-*.cjs
+test-*.sh
+
+# Misc project files
+Meeting-Ops_Client_Summary.md
+GUI-menu-layout.md
+
+# Backup files
+*.bak
+*.bak[0-9]*
+*.bak1*
+*.bak2*
+install.sh.bak*
+Python-3.12.3.tgz
+Python-3.12.3/
+alembic.ini
+migrations/
+backend/src/
+FIX_FRONTEND_ERRORS.md
+GROK_FRONTEND_IMPLEMENTATION.md
+
+# === Deploy artifacts (Phase 4c — moved deploy into repo) ===
+
+.claude/
+
+# Deployment env files + timestamped backups (never commit secrets)

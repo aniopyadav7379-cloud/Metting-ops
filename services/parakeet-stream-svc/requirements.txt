@@ -1,0 +1,17 @@
+# meet-parakeet-stream-svc — Phase B.2 add-ons on top of the meet-parakeet-svc base.
+#
+# The base image (meet-parakeet-svc:local) already provides:
+#   - fastapi, uvicorn, pydantic, python-multipart
+#   - numpy, soundfile, librosa, scipy
+#   - torch 2.4.1 + torchaudio (CUDA 12.4)
+#   - nemo_toolkit[asr] 2.4.1 (Parakeet TDT support)
+#   - Cython, pyarrow, huggingface_hub
+#
+# This file is the seam for stream-only deps that don't belong in the
+# batch container.
+
+# Phase B.3 — Opus packet decoding for clients that uplink "OPUS" frames
+# instead of raw PCM16. Pure-Python ctypes binding over the system
+# libopus (libopus0 / libopus-dev on Debian, already present in the
+# meet-parakeet-svc base image's apt layer).
+opuslib>=3.0.1,<4

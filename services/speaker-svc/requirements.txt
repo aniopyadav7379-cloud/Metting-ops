@@ -1,0 +1,12 @@
+fastapi==0.115.6
+uvicorn[standard]==0.32.1
+pydantic==2.10.3
+python-multipart==0.0.20
+numpy>=2.0.0
+soundfile==0.12.1
+torch==2.8.0+cu126
+torchaudio==2.8.0+cu126
+torchcodec==0.7.0+cu126
+# Pyannote community-1 diarization + wespeaker embeddings — gated (HF token + access grant)
+pyannote.audio>=4.0.0
+huggingface_hub>=0.28.1

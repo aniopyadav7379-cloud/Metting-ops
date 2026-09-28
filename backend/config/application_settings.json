@@ -1,0 +1,27 @@
+{
+  "defaultLLMProvider": "ollama",
+  "transcriptionLanguage": "en",
+  "transcriptionModel": "large-v3",
+  "autoSaveInterval": 30,
+  "enableNPUAcceleration": true,
+  "audioSampleRate": 16000,
+  "audioInputDevice": "default",
+  "chunkDuration": 10,
+  "enableVAD": true,
+  "vadThreshold": 0.5,
+  "maxRecordingDuration": 7200,
+  "enableAutoTranscription": true,
+  "enableSpeakerDiarization": true,
+  "maxSpeakers": 4,
+  "notificationSettings": {
+    "onRecordingStart": true,
+    "onRecordingStop": true,
+    "onTranscriptionComplete": true,
+    "onReportGenerated": false
+  },
+  "storageSettings": {
+    "retentionDays": 90,
+    "autoArchive": true,
+    "compressionEnabled": false
+  }
+}

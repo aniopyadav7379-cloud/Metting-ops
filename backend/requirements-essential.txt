@@ -1,0 +1,64 @@
+# Essential Requirements for Meeting-Ops
+# These packages are required for basic functionality
+# Use this for fresh installations if main requirements.txt has issues
+
+# Core Framework
+fastapi==0.115.14
+sentry-sdk[fastapi]>=2.0
+uvicorn[standard]==0.35.0
+python-multipart==0.0.12
+websockets==12.0
+aiofiles==24.1.0
+
+# Database
+sqlalchemy==2.0.32
+psycopg2-binary==2.9.9
+alembic==1.13.1
+
+# Redis (for caching and real-time features)
+redis==5.0.1
+
+# Authentication & Security
+bcrypt==4.2.1
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+pyjwt==2.8.0
+cryptography==42.0.0
+
+# AI/ML Core - Flexible versions for compatibility
+numpy>=2.0.0
+torch>=2.5.0
+transformers>=4.40.0
+
+# Audio Processing Essentials
+librosa>=0.10.0
+soundfile>=0.12.1
+pyaudio==0.2.14
+pydub==0.25.1
+ffmpeg-python==0.2.0
+
+# LLM Providers
+openai==1.54.4
+anthropic==0.40.0
+ollama==0.4.4
+requests==2.32.3
+
+# Document Generation
+reportlab==4.0.4
+python-docx==1.1.2
+pypdf==5.9.0
+jinja2==3.1.4
+markdown==3.7
+
+# Utilities
+httpx==0.28.1
+pydantic==2.11.0
+pydantic-settings==2.7.0
+python-dotenv==1.0.1
+psutil==5.9.8
+python-dateutil==2.9.0
+pytz==2024.2
+
+# Basic transcription support
+# For Whisper support without whisperx
+openai-whisper>=20231117  # Standard Whisper as fallback

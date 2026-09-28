@@ -1,0 +1,128 @@
+# Core Framework
+fastapi==0.115.14
+sentry-sdk[fastapi]>=2.0
+uvicorn[standard]==0.35.0
+python-multipart==0.0.12
+websockets==12.0
+aiofiles==24.1.0
+
+# Database
+sqlalchemy==2.0.32
+psycopg2-binary==2.9.9
+alembic==1.13.1
+
+# Redis (for caching and real-time features)
+redis==5.0.1
+redis[hiredis]==5.0.1
+
+# Stripe Subscriptions (billing). Used by api/billing.py +
+# api/stripe_webhook.py via the wrapper in services/stripe_client.py.
+stripe==10.12.0
+
+# Task Queue (Bulk Import Arq worker — B-import.4)
+arq>=0.26
+
+# Authentication & Security
+bcrypt==4.2.1
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+pyjwt==2.8.0
+cryptography==42.0.0
+
+# AI/ML Core
+numpy==2.1.3
+huggingface-hub>=0.16.0
+
+# Optional: Heavy ML dependencies (not needed if using whisper.cpp + llama.cpp)
+# Uncomment if you need PyTorch-based models or sentence-transformers
+# torch>=2.5.0
+# torchaudio>=2.5.0
+# torchvision>=0.20.0
+# transformers==4.46.2
+# sentence-transformers==3.3.1
+
+# Audio Processing (NPU-optimized whisperx)
+# Note: whisperx and pyannote.audio may fail on fresh installs
+# The system includes custom implementations in services/whisperx_py313.py
+# that work without these packages for NPU acceleration
+# whisperx==3.1.1  # Optional - custom implementation available
+# pyannote.audio==3.1.1  # Optional - may have compatibility issues
+librosa==0.10.2.post1
+soundfile>=0.12.1
+pyaudio==0.2.14
+pydub==0.25.1
+ffmpeg-python==0.2.0
+# Voice activity detection — used by the Conference Room recorder to
+# segment arecord output into per-turn chunks before POSTing to the
+# /chunks endpoint. CPU-only; ~30 KB native build, no GPU/runtime deps.
+# webrtcvad-wheels provides the same `webrtcvad` module without the
+# pkg_resources import (setuptools 81+ dropped it).
+webrtcvad-wheels==2.0.14
+
+# LLM Providers
+openai==1.54.4
+anthropic==0.40.0
+requests==2.32.3
+
+# Document Generation
+reportlab==4.0.4
+python-docx==1.1.2
+pypdf==5.9.0
+jinja2==3.1.4
+markdown==3.7
+
+# Utilities
+httpx==0.28.1
+rapidfuzz==3.9.6
+pydantic==2.11.0
+pydantic-settings==2.7.0
+python-dotenv==1.0.1
+psutil==5.9.8
+networkx==3.3
+python-dateutil==2.9.0
+pytz==2024.2
+
+# Vector Database (for semantic search)
+qdrant-client==1.12.1
+# Local CPU embedding + BM25 for SemanticSearchService — BAAI/bge-small-en-v1.5
+# (384-dim) and Qdrant/bm25. Needed for the dashboard ask bar's search_meetings
+# tool to use real semantic ranking instead of SQL ILIKE fallback.
+fastembed==0.8.0
+
+# Monitoring & Logging
+prometheus-client==0.21.0
+structlog==24.4.0
+
+# Development & Testing (optional)
+pytest==8.3.4
+pytest-asyncio==0.24.0
+pytest-cov==6.0.0
+httpx-ws==0.6.2
+
+# NPU/Hardware Acceleration (optional, platform-specific)
+onnx==1.18.0
+onnxruntime==1.20.1
+
+# Optional: Kokoro ONNX (for NPU TTS support, requires git)
+# -e git+https://github.com/thewh1teagle/kokoro-onnx@112e8221cd9f31c7f9a1302d773a31411b9789cb#egg=kokoro_onnx
+
+# Note: Some packages may require specific versions based on Python version
+# For Python 3.13, use requirements-py313.txt
+email-validator==2.2.0
+
+# Optional router deps (previously skipped at startup)
+aiohttp==3.10.11
+netifaces==0.11.0
+
+# Session attachments object storage (Garage S3) — 025_session_attachments
+boto3==1.35.21
+
+# v3.18.3: audioop back-port for Python 3.13+ (PEP 594 removed stdlib audioop).
+# Used by api/streaming.py for RMS-based VAD silence detection.
+audioop-lts; python_version >= "3.13"
+
+# Model Context Protocol SDK. Shared between the stdio entry
+# (mcp/meeting_ops_mcp.py) and the hosted streamable-HTTP endpoint at
+# /mcp (backend/api/mcp_http.py). 1.2 is the first version that ships
+# the streamable-HTTP transport; 1.10+ pins the modern Context API.
+mcp>=1.10

@@ -1,0 +1,16 @@
+fastapi==0.115.6
+uvicorn[standard]==0.32.1
+pydantic==2.10.3
+python-multipart==0.0.20
+numpy==1.26.4
+soundfile==0.12.1
+librosa==0.10.2.post1
+huggingface_hub>=0.30.0,<1.0
+scipy==1.13.1
+# NeMo ASR — Parakeet-TDT-1.1B / 0.6B
+# 2.0.0 is the first release with native Parakeet-TDT support and FastConformer fixes.
+nemo_toolkit[asr]==2.4.1
+# Cython is needed by NeMo's text normalizers
+Cython==3.0.11
+# pyarrow constraint relaxed — NeMo 2.4 dropped the PyExtensionType path
+pyarrow>=14.0.0
