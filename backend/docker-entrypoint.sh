@@ -1,4 +1,4 @@
-﻿#!/bin/sh
+#!/bin/sh
 # Backend container entrypoint.
 
 set -e
