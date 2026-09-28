@@ -14,6 +14,18 @@ PY
 
 if [ "$TABLE_COUNT" = "0" ]; then
     echo "[entrypoint] Fresh database detected."
+    echo "[entrypoint] Enabling PostgreSQL extensions..."
+
+    python - <<'PY'
+from database.database import engine
+from sqlalchemy import text
+
+with engine.begin() as connection:
+    connection.execute(text("CREATE EXTENSION IF NOT EXISTS citext"))
+
+print("[entrypoint] PostgreSQL extensions enabled.")
+PY
+
     echo "[entrypoint] Creating current application schema..."
 
     python - <<'PY'
