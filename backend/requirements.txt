@@ -126,5 +126,3 @@ audioop-lts; python_version >= "3.13"
 # /mcp (backend/api/mcp_http.py). 1.2 is the first version that ships
 # the streamable-HTTP transport; 1.10+ pins the modern Context API.
 mcp>=1.10
-
-asyncpg>=0.29,<1
