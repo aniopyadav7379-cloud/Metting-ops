@@ -363,11 +363,4 @@ Further reading: [`docs/architecture.md`](./docs/architecture.md) ·
 
 </div>
 
-## License
 
-**GNU Affero General Public License v3.0 or later (AGPL-3.0-or-later)** — see [LICENSE](LICENSE) and [NOTICE](NOTICE).
-
-The AGPL's network-copyleft terms mean that if you run a modified Meeting-Ops as a
-network service, you must offer your users the corresponding source. A **commercial
-license** is available for organizations that cannot meet those terms — contact
-<licensing@unicorncommander.ai>.
