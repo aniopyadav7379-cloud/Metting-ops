@@ -130,7 +130,7 @@ def test_integration_url_validation_allows_public_https_and_named_services():
 
 
 class TestListMasksSecrets:
-    def test_list_returns_all_five_integrations_with_masked_secrets(self, client):
+    def test_list_returns_all_integrations_with_masked_secrets(self, client):
         _, _, _, SessionLocal = _current_models()
         db = SessionLocal()
         try:
@@ -164,6 +164,19 @@ class TestListMasksSecrets:
                 "contact_ops",
                 "accounting_ops",
                 "stable",
+                # Added in Phase 3G — real task/notification integrations
+                # (Jira, Todoist, ClickUp, Notion, Confluence, Slack, Teams,
+                # Email), same generic encrypted-config system as the five
+                # above. This assertion documents the current full set, not
+                # a cap on it.
+                "jira",
+                "todoist",
+                "clickup",
+                "notion",
+                "confluence",
+                "slack",
+                "teams",
+                "email",
             }
             brigade = rows["brigade"]
             assert brigade["enabled"] is True

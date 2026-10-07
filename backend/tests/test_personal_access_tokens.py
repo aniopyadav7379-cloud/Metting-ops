@@ -145,7 +145,17 @@ def test_resolve_pat_revoked_and_tampered_return_none(app):
     db = SessionLocal()
     try:
         row, plaintext = create_pat(db, user=user, name="Invalid Test")
-        assert resolve_pat(db, plaintext=plaintext[:-1] + "A") is None
+        # Tamper the last character with something guaranteed to actually
+        # change the token. "A" is itself a valid character in the token's
+        # base32 alphabet, so plaintext[:-1] + "A" has a ~1/32 chance of
+        # being a silent no-op (reproducing the original plaintext) and
+        # making this assertion flaky rather than meaningful. Picking a
+        # replacement that provably differs from the original character
+        # removes that flakiness without weakening what's being tested.
+        tampered_last_char = "B" if plaintext[-1] != "B" else "C"
+        tampered = plaintext[:-1] + tampered_last_char
+        assert tampered != plaintext
+        assert resolve_pat(db, plaintext=tampered) is None
         assert revoke_pat(db, user=user, pat_id=row.id) is True
         assert resolve_pat(db, plaintext=plaintext) is None
     finally:
@@ -201,4 +211,14 @@ def test_cross_user_pat_cannot_read_other_users_org_data(client):
             "X-MeetingOps-Org": org_b.slug,
         },
     )
-    assert denied.status_code == 403
+    # auth/organization.py deliberately treats an org selector the caller
+    # isn't a member of as if none had been sent (see the comment above
+    # "falling back to default resolution" there) rather than hard-403ing
+    # on the selector itself, so the request resolves against user_a's own
+    # org — where session_b (org_b's) legitimately doesn't exist, hence 404.
+    # The security property that actually matters is checked directly
+    # below: user_a's PAT must never be able to read session_b's content,
+    # regardless of which status code carries that denial.
+    assert denied.status_code in (403, 404)
+    assert "User B Private Session" not in denied.text
+    assert str(session_b.session_id) not in denied.text

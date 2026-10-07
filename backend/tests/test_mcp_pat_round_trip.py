@@ -101,5 +101,21 @@ def test_mcp_pat_propose_rename_cross_user_is_rejected_by_backend(client):
         },
     )
 
-    assert response.status_code == 403
-    assert "access" in response.text.lower()
+    # Same org-selector fallback documented in auth/organization.py as
+    # test_cross_user_pat_cannot_read_other_users_org_data: an org selector
+    # user_a isn't a member of is dropped, not hard-403'd, so this resolves
+    # against user_a's own org, where session_b doesn't exist — hence 404.
+    # What actually matters is verified directly below: the rename must
+    # never be applied to user_b's session, regardless of status code.
+    assert response.status_code in (403, 404)
+    if response.status_code == 403:
+        assert "access" in response.text.lower()
+
+    db = SessionLocal()
+    try:
+        from database.models import RecordingSession
+
+        untouched = db.query(RecordingSession).filter(RecordingSession.id == session_b.id).first()
+        assert untouched.title == "Owned By User B"
+    finally:
+        db.close()
