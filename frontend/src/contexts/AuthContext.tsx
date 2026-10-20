@@ -254,6 +254,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Check if user is authenticated on mount
   useEffect(() => {
     const checkAuth = async () => {
+      // Always resolve the initial loading state, including the active-recording
+      // branches below. Previously those branches returned before setIsLoading(false),
+      // leaving every guarded route stuck on "Authenticating...".
+      try {
       if (token) {
         try {
           const response = await fetch(authApi('/api/auth/me'), {
@@ -311,7 +315,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           }
         }
       }
-      setIsLoading(false);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     // Always probe /api/auth/me on mount so SSO sessions (oauth2-proxy
@@ -320,8 +326,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const probeSso = async () => {
       try {
         const r = await fetch(authApi('/api/auth/me'), {
-          credentials: 'same-origin',
+          credentials: 'include',
           headers: { 'Accept': 'application/json' },
+          signal: AbortSignal.timeout(10000),
         });
         const ct = r.headers.get('content-type') || '';
         if (r.ok && ct.includes('application/json')) {
@@ -357,6 +364,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ refresh_token: refreshToken }),
+        signal: AbortSignal.timeout(10000),
       });
 
       if (response.ok) {
